@@ -9,7 +9,9 @@ from pyecharts.globals import ChartType
 from pyecharts.commons.utils import JsCode
 from pyecharts.charts import Bar, Grid, Line, Pie, Tab
 from pyecharts.charts import Line
-
+from pyecharts import options as opts
+from pyecharts.charts import Map, Timeline
+from pyecharts.faker import Faker
 
 app_issue = ['本土病例', '北京', '天津', '上海', '重庆', '河北', '山西',
              '辽宁', '吉林', '黑龙江', '江苏', '浙江', '安徽', '福建', '江西', '山东', '河南', '湖北', '湖南',
@@ -29,6 +31,18 @@ headers = {
         'Referer': 'https://cn.bing.com/',
         'Upgrade-Insecure-Requests': '1',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 Edg/105.0.1343.33'}
+
+#写入港澳台新增数据
+def write_outland_into_excel(workbook, today_covid_adata, range_limit):
+    sheet_a=workbook["新增普通"]
+    for i, j in zip(range(range_limit), range(34,37)):
+        sheet_a.cell(i+2, j).value = sheet_a.cell(i+2, j+3).value - sheet_a.cell(i+3, j+3).value
+
+    today_covid_adata["台湾新增"] = sheet_a.cell(2, 34).value
+    today_covid_adata["香港新增"] = sheet_a.cell(2, 35).value
+    today_covid_adata["澳门新增"] = sheet_a.cell(2, 36).value
+    workbook.save("covid-19.xlsx")
+    return today_covid_adata
 
 #创建条形图
 def bar_create(bar_time_data, bar_covid_data, bar_not_app_covid_data):
@@ -115,12 +129,14 @@ def map_3d_creat(adata, ndata):
             ("海南", [110.3893, 19.8516, adata["海南"]]),
             ("上海", [121.4648, 31.2891, adata["上海"]]),
             ("北京", [116.46, 39.92, adata["北京"]]),
+            ("广东", [113.281, 23.1252, adata["广东"]]),
             ("香港", [114.1733, 22.3200, adata["香港新增"]]),
             ("云南", [100.2969, 25.7217, adata["云南"]]),
             ("澳门", [111.9586, 21.8, adata["澳门新增"]]),
             ("台湾", [121.5200, 25.0307, adata["台湾新增"]])
         ]
         today_not_app_covid_data = [
+            ("广东", [113.281, 23.1252, ndata["广东"]]),
             ("黑龙江", [127.9688, 45.368, ndata["黑龙江"]]),
             ("内蒙古", [110.3467, 41.4899, ndata["内蒙古"]]),
             ("吉林", [125.8154, 44.2584, ndata["吉林"]]),
@@ -153,7 +169,7 @@ def map_3d_creat(adata, ndata):
             ("云南", [100.2969, 25.7217, ndata["云南"]])
         ]
         map = (
-            Map3D(init_opts=opts.InitOpts(width="1600px", height="900px", ))
+            Map3D(init_opts=opts.InitOpts(width="1600px", height="900px"))
             .add_schema(
                 box_height = 50,
                 region_height=1,
@@ -188,6 +204,7 @@ def map_3d_creat(adata, ndata):
                 series_name="今日新增确诊",
                 data_pair=today_covid_data,
                 type_=ChartType.BAR3D,
+                bar_size=1,
                 shading="lambert",
                 min_height=0.1,
                 label_opts=opts.LabelOpts(
@@ -208,7 +225,7 @@ def map_3d_creat(adata, ndata):
                 ),
             )
             .set_global_opts(title_opts=opts.TitleOpts(title="今日疫情数据"),
-                             visualmap_opts=opts.VisualMapOpts(max_=20, range_color=[
+                             visualmap_opts=opts.VisualMapOpts(max_=100, range_color=[
                                  "#33CC00",
                                  "#3EB804",
                                  "#4AA308",
@@ -223,6 +240,23 @@ def map_3d_creat(adata, ndata):
                              ], ), tooltip_opts=opts.TooltipOpts(is_show= False), legend_opts=opts.LegendOpts(selected_mode='single'))
         )
         return map
+
+# def map_timeline_create():
+#
+#
+#     tl = Timeline()
+#     for i in range(2013, 2020):
+#         map0 = (
+#             Map(init_opts=opts.InitOpts(width="1600px", height="900px"))
+#             .add("新增普通确诊", [list(z) for z in zip(Faker.provinces, Faker.values())], "china")
+#             .set_global_opts(
+#                 title_opts=opts.TitleOpts(title="Map-{}年某些数据".format(i)),
+#                 visualmap_opts=opts.VisualMapOpts(max_=200),
+#             )
+#         )
+#         tl.add(map0, "{}年".format(i))
+#     return tl
+
 
 #初始化excel表格
 def init_xls():
@@ -253,35 +287,7 @@ def write_into_xls(workbook, time_data_final, i, count_line, len_html, adata, nd
     #普通新增数据写入
     sheet_a.cell(row, 1).value = time_data_final#写入普通新增的日期
     for x1 in range(2, 40):
-        #台湾，香港，澳门特殊处理，写入公式用累计新增计算新增
-        if sheet_a.cell(1, x1).value == "台湾新增":
-            if (i == range_up_limit - 1 and count_line == len_html - 1):
-                sheet_a.cell(row, x1).value = 0
-            else:#字符串拼接成公式
-                str1 = 'AK' + str(row)
-                str2 = 'AK' + str(row+1)
-                str3 = str1 + '-' + str2
-                sheet_a.cell(row, x1).value = '=' + str3
-
-        elif sheet_a.cell(1, x1).value == "香港新增":
-            if (i == range_up_limit - 1 and count_line == len_html - 1):
-                sheet_a.cell(row, x1).value = 0
-            else:
-                str1 = 'AL' + str(row)
-                str2 = 'AL' + str(row+1)
-                str3 = str1 + '-' + str2
-                sheet_a.cell(row, x1).value = '=' + str3
-
-        elif sheet_a.cell(1, x1).value == "澳门新增":
-            if (i == range_up_limit - 1 and count_line == len_html - 1):
-                sheet_a.cell(row, x1).value = 0
-            else:
-                str1 = 'AM' + str(row)
-                str2 = 'AM' + str(row+1)
-                str3 = str1 + '-' + str2
-                sheet_a.cell(row, x1).value = '=' + str3
-
-        elif (sheet_a.cell(1, x1).value) in adata:
+        if (sheet_a.cell(1, x1).value) in adata:
             sheet_a.cell(row, x1).value = adata[sheet_a.cell(1, x1).value]
 
 
@@ -291,6 +297,7 @@ def write_into_xls(workbook, time_data_final, i, count_line, len_html, adata, nd
         sheet_n.cell(row, x1).value = ndata[sheet_n.cell(1, x1).value]
 
     #保存excel文件
+
     workbook.save("covid-19.xls")
 
 #请求网页并解析文本
@@ -322,6 +329,7 @@ def crwal_and_text(range_up_limit, workbook):
 
 
         for html_ite, title_c, count_line in zip(html, title, range(len(html))):
+            row = 1 + (i - 1) * 24 + count_line + 1
 
             #省份转换成字典
             adata = dict.fromkeys(app_issue, 0)
@@ -362,6 +370,7 @@ def crwal_and_text(range_up_limit, workbook):
                 words = ''.join(re.findall(hanzi_pattern, item))
                 num = ''.join(re.findall(digit_pattern, item))
 
+
                 #文本解析后天然顺序普通新增在前面无症状在中间港澳台在最后所有设置一个flag来区分录入的信息
                 if words == "本土病例":#普通新增flag=1
                     flag = 1
@@ -383,6 +392,7 @@ def crwal_and_text(range_up_limit, workbook):
                     else:
                         continue
 
+            write_into_xls(workbook, time_data_final, i, count_line, len(html), adata, ndata, range_up_limit)
             print(time_data_final + "信息开始录入")
 
             #柱状图所需要的数据
@@ -390,7 +400,7 @@ def crwal_and_text(range_up_limit, workbook):
             bar_covid_data.append(adata["本土病例"])
             bar_not_app_covid_data.append(ndata["本土"])
 
-            #收集各类图表所需要的数据
+            #折线图所需要的数据
             line_time_data.append(time_data_final)
             line_covid_data.append(adata["本土病例"])
             line_not_app_covid_data.append(ndata["本土"])
@@ -400,11 +410,12 @@ def crwal_and_text(range_up_limit, workbook):
                 today_covid_adata = adata
                 today_not_app_covid_adata = ndata
 
-            if (count_line == len(html) - 1):
+
+            if (count_line == len(html) - 1 and i == 1):
+                today_covid_adata = write_outland_into_excel(workbook, today_covid_adata, i)
                 creat_all_charts(today_covid_adata, today_not_app_covid_adata, line_time_data, line_covid_data, line_not_app_covid_data, bar_time_data,
                                  bar_covid_data, bar_not_app_covid_data)
 
-            write_into_xls(workbook, time_data_final, i, count_line, len(html), adata, ndata, range_up_limit)
         #控制台检测数据#爬取
 
 #控制台输出函数默认关闭

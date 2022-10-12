@@ -1,0 +1,30 @@
+{
+    "description": "项目配置文件。",
+    "miniprogramRoot": "",
+    "setting": {
+        "urlCheck": true,
+        "postcss": true,
+        "minified": true,
+        "newFeature": false,
+        "enhance": true,
+        "useIsolateContext": true,
+        "babelSetting": {
+            "ignore": [],
+            "disablePlugins": [],
+            "outputPath": ""
+        }
+    },
+    "compileType": "game",
+    "libVersion": "2.26.1",
+    "appid": "wxdbd5b69f9ca99158",
+    "projectname": "hhhh",
+    "condition": {},
+    "packOptions": {
+        "ignore": [],
+        "include": []
+    },
+    "editorSetting": {
+        "tabIndent": "insertSpaces",
+        "tabSize": 4
+    }
+}

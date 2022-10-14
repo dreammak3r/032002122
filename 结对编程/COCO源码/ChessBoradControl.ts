@@ -239,13 +239,47 @@ export class ChessBoradControl extends Component {
         }
     }
     calScore() {
-        let sumScore = 0;
+        let i = 0;
+        let sumScoreOne = 0;
+        let sumScoreTwo = 0;
+        let sumScoreThree = 0;
+        let rowOneCount = [0,0,0,0,0,0];
+        let rowTwoCount = [0,0,0,0,0,0];
+        let rowThreeCount = [0,0,0,0,0,0];
 
-        for(let i = 0; i < 9; i++)
-        {
-            sumScore = sumScore + this.myChildScript[i].thisCubeNumber;
+        // for(let i = 0; i < 9; i++)
+        // {
+        //     sumScore = sumScore + this.myChildScript[i].thisCubeNumber;
+        // }
+        for(i = 0; i < 2; i++){
+            rowOneCount[this.myChildScript[i].thisCubeNumber]++;
         }
-        return sumScore;
+        for(i=0;i<5;i++){
+            if(rowOneCount[i]){
+                sumScoreOne+=i*Math.pow(rowOneCount[i],2);
+            }
+        }
+
+
+        for(i = 3; i < 5; i++){
+            rowTwoCount[this.myChildScript[i].thisCubeNumber]++;
+        }
+        for(i=0;i<5;i++){
+            if(rowTwoCount[i]){
+                sumScoreTwo+=i*Math.pow(rowTwoCount[i],2);
+            }
+        }
+
+
+        for(i = 5; i < 8; i++){
+            rowThreeCount[this.myChildScript[i].thisCubeNumber]++;
+        }
+        for(i=0;i<5;i++){
+            if(rowThreeCount[i]){
+                sumScoreThree+=i*Math.pow(rowThreeCount[i],2);
+            }
+        }
+        return sumScoreThree+sumScoreOne+sumScoreTwo;
     }
     clean() {
         for(let i = 0; i < 9; i++)

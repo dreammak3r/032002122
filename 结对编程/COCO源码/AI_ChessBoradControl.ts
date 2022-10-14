@@ -240,38 +240,36 @@ export class AIChessBoradControl extends Component {
         let rowTwoCount = [0,0,0,0,0,0];
         let rowThreeCount = [0,0,0,0,0,0];
 
-        // for(let i = 0; i < 9; i++)
-        // {
-        //     sumScore = sumScore + this.myChildScript[i].thisCubeNumber;
-        // }
-        for(i = 0; i < 2; i++){
-            rowOneCount[this.myChildScript[i].thisCubeNumber]++;
-        }
-        for(i=0;i<5;i++){
-            if(rowOneCount[i]){
-                sumScoreOne+=i*Math.pow(rowOneCount[i],2);
-            }
-        }
 
+        for(i = 0; i < 2; i++){
+            if(this.myChildScript[i].thisCubeNumber)
+                rowOneCount[this.myChildScript[i].thisCubeNumber-1]++;
+        }
+        for(i=0; i<2;i++){
+            if(this.myChildScript[i].thisCubeNumber)
+                sumScoreOne+=this.myChildScript[i].thisCubeNumber*Math.pow(rowOneCount[this.myChildScript[i].thisCubeNumber-1],2);
+        }
+        console.log("sumScoreOne"+sumScoreOne);
 
         for(i = 3; i < 5; i++){
-            rowTwoCount[this.myChildScript[i].thisCubeNumber]++;
+            if(this.myChildScript[i].thisCubeNumber)
+                rowTwoCount[this.myChildScript[i].thisCubeNumber-1]++;
         }
-        for(i=0;i<5;i++){
-            if(rowTwoCount[i]){
-                sumScoreTwo+=i*Math.pow(rowTwoCount[i],2);
-            }
+        for(i = 3; i < 5; i++){
+            if(this.myChildScript[i].thisCubeNumber)
+                sumScoreTwo+=this.myChildScript[i].thisCubeNumber*Math.pow(rowTwoCount[this.myChildScript[i].thisCubeNumber-1],2);
         }
 
-
+        console.log("sumScoreTwo"+sumScoreTwo);
         for(i = 5; i < 8; i++){
-            rowThreeCount[this.myChildScript[i].thisCubeNumber]++;
+            if(this.myChildScript[i].thisCubeNumber)
+                rowThreeCount[this.myChildScript[i].thisCubeNumber-1]++;
         }
-        for(i=0;i<5;i++){
-            if(rowThreeCount[i]){
-                sumScoreThree+=i*Math.pow(rowThreeCount[i],2);
-            }
+        for(i = 5; i < 8; i++){
+            if(this.myChildScript[i].thisCubeNumber)
+                sumScoreThree+=this.myChildScript[i].thisCubeNumber*Math.pow(rowThreeCount[this.myChildScript[i].thisCubeNumber-1],2);
         }
+        console.log("sumScoreThree"+sumScoreThree);
         return sumScoreThree+sumScoreOne+sumScoreTwo;
     }
     clean() {
